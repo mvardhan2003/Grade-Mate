@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Report - {{ roll_no }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+</head>
+<body class="bg-light">
+    <div class="container py-4">
+        <div class="card shadow p-4 mb-4">
+            <h2 class="mb-3">Student Report</h2>
+            {% if student %}
+                <p><strong>Roll No:</strong> {{ roll_no }}</p>
+                <p><strong>Student Name:</strong> {{ student.full_name }}</p>
+            {% endif %}
+
+            <h5 class="mt-4">Evaluation History</h5>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Subject</th>
+                        <th>Total Marks</th>
+                        <th>Percentage</th>
+                        <th>Grade</th>
+                        <th>GPA</th>
+                        <th>Credits</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for eval in evaluations %}
+                    <tr>
+                        <td>{{ eval.subject }}</td>
+                        <td>{{ eval.total_marks }}</td>
+                        <td>{{ "%.2f"|format(eval.percentage) }}%</td>
+                        <td>{{ eval.grade }}</td>
+                        <td>{{ "%.2f"|format(eval.grade_point) }}</td>
+                        <td>{{ eval.credits }}</td>
+                        <td>{{ eval.formatted_date }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <h5 class="mt-4">Latest Subject-wise GPA Summary</h5>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Subject</th>
+                        <th>Percentage</th>
+                        <th>GPA</th>
+                        <th>Credits</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in subject_performance %}
+                    <tr>
+                        <td>{{ s.subject }}</td>
+                        <td>{{ "%.2f"|format(s.avg_percentage) }}%</td>
+                        <td>{{ "%.2f"|format(s.avg_grade_point) }}</td>
+                        <td>{{ s.credits }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <h5 class="mt-4 text-primary">
+                Semester GPA:
+                <span class="badge bg-success">{{ "%.2f"|format(semester_gpa) }}</span>
+            </h5>
+
+            <div class="mt-4">
+                <a href="/reports" class="btn btn-secondary">Back to Reports</a>
+            </div>
+        </div>
+        <!-- Add this button near the Semester GPA section -->
+    <div class="mt-4 d-flex justify-content-between align-items-center">
+        <a href="/download_semester_report/{{ roll_no }}" class="btn btn-success">
+            <i class="bi bi-file-excel"></i> Download Semester Report
+        </a>
+    </div>
+    </div>
+</body>
+</html>

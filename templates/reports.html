@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Evaluation Reports</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .card-header {
+            font-weight: bold;
+        }
+        .gpa-badge {
+            font-size: 1rem;
+            padding: 5px 10px;
+        }
+        .table-hover tbody tr:hover {
+            background-color: rgba(78, 84, 200, 0.1);
+        }
+        .delete-btn-container {
+            min-width: 80px;
+            text-align: right;
+        }
+        .roll-no-link {
+            flex-grow: 1;
+        }
+        .action-container {
+            display: flex;
+            gap: 5px;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <div class="container py-4">
+        <h1 class="text-center mb-4">Evaluation Reports</h1>
+        
+        <div class="card mb-4 shadow">
+            <div class="card-header bg-primary text-white">
+                Student GPAs
+            </div>
+            <div class="card-body">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Roll No</th>
+                            <th>Student Name</th>
+                            <th>GPA</th>
+                            <th>Exams Taken</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for student in gpa_data %}
+                        <tr>
+                            <td>
+                                <a href="{{ url_for('student_report', roll_no=student['roll_no']) }}" class="roll-no-link">
+                                    {{ student['roll_no'] }}
+                                </a>
+                            </td>
+                            <td>{{ student['full_name'] }}</td>
+                            <td>
+                                <span class="badge rounded-pill bg-{{ 'success' if student['gpa'] >= 7.5 else 'warning' }} gpa-badge">
+                                    {{ "%.2f"|format(student['gpa']) }}
+                                </span>
+                            </td>
+                            <td>{{ student['exams_taken'] }}</td>
+                            <td class="action-container">
+                                <a href="{{ url_for('student_report', roll_no=student['roll_no']) }}" class="btn btn-sm btn-info">
+                                    View
+                                </a>
+                                <form action="{{ url_for('delete_student', roll_no=student['roll_no']) }}" 
+                                      method="POST" 
+                                      onsubmit="return confirm('Are you sure you want to permanently delete all records for {{ student['roll_no'] }}? This action cannot be undone.');">
+                                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card mb-4 shadow">
+            <div class="card-header bg-info text-white">
+                Subject-wise Performance
+            </div>
+            <div class="card-body">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Subject</th>
+                            <th>Average Percentage</th>
+                            <th>Exams Graded</th>
+                            <th>Credits</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for subject in subject_stats %}
+                        <tr>
+                            <td>{{ subject['subject'] }}</td>
+                            <td>{{ "%.2f"|format(subject['avg_percentage']) }}%</td>
+                            <td>{{ subject['exams_graded'] }}</td>
+                            <td>{{ subject['credits'] }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card shadow">
+            <div class="card-header bg-secondary text-white">
+                Detailed Evaluation History
+            </div>
+            <div class="card-body">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Roll No</th>
+                            <th>Student Name</th>
+                            <th>Subject</th>
+                            <th>Marks</th>
+                            <th>Grade</th>
+                            <th>GPA</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for result in results %}
+                        <tr>
+                            <td>{{ result['timestamp'] }}</td>
+                            <td>{{ result['roll_no'] }}</td>
+                            <td>{{ result['full_name'] }}</td>
+                            <td>{{ result['subject'] }}</td>
+                            <td>{{ result['total_marks'] }}</td>
+                            <td>
+                                <span class="badge bg-{{ 'success' if result['grade_point'] >= 7.5 else 'warning' }}">
+                                    {{ result['grade'] }} ({{ result['grade_point'] }})
+                                </span>
+                            </td>
+                            <td>{{ "%.2f"|format(result['grade_point']) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="mt-4 text-center">
+            <a href="/" class="btn btn-primary">Back to Evaluation</a>
+        </div>
+        <div class="text-end mb-3">
+            <a href="/download_excel" class="btn btn-outline-success">📥 Download Excel Report</a>
+        </div>
+    </div>
+
+    <script>
+        // Optional: Add fade-out effect when deleting
+        document.querySelectorAll('form[action^="/delete_student"]').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                const row = this.closest('tr');
+                if (row) {
+                    row.style.transition = 'opacity 0.3s ease';
+                    row.style.opacity = '0.5';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Evaluation Results</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .score-card {
+            background: linear-gradient(135deg, #4e54c8, #8f94fb);
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .total-score {
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+        .grade-badge {
+            font-size: 1.2rem;
+            padding: 8px 15px;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <div class="container py-4">
+        <!-- Result Summary Card -->
+        <div class="score-card">
+            <h2>Evaluation Results</h2>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <h4>Roll No: {{ roll_no }}</h4>
+                </div>
+                <div class="col-md-6">
+                    <h4>Subject: {{ subject }}</h4>
+                </div>
+            </div>
+            <div class="total-score">{{ total_marks }} Marks</div>
+            <div class="my-2">Percentage: {{ percentage }}%</div>
+            <div class="row justify-content-center">
+                <div class="col-auto">
+                    <span class="badge bg-success grade-badge">Grade: {{ grade }}</span>
+                </div>
+                <div class="col-auto">
+                    <span class="badge bg-info grade-badge">Grade Point: {{ grade_point }}</span>
+                </div>
+            </div>
+            <div class="mt-4">
+                <a href="/" class="btn btn-light">Evaluate Another</a>
+                <a href="/reports" class="btn btn-outline-light">View All Reports</a>
+            </div>
+        </div>
+
+        <!-- Chart Section -->
+        {% if question_results %}
+        <div class="card my-4 p-4">
+            <h4 class="mb-3 text-center">Question-wise Similarity & Marks</h4>
+            <canvas id="questionChart" width="400" height="200"></canvas>
+        </div>
+
+        <!-- Table Section -->
+        <div class="card p-3 mb-5">
+            <h5 class="mb-2">Detailed Breakdown</h5>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Question</th>
+                        <th>Similarity (%)</th>
+                        <th>Marks Awarded</th>
+                        <th>Max Marks</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for q in question_results %}
+                    <tr>
+                        <td>{{ q.question }}</td>
+                        <td>{{ q.similarity }}</td>
+                        <td>{{ q.score }}</td>
+                        <td>{{ q.max_marks }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <script>
+            const questionLabels = {{ question_results | map(attribute='question') | list | safe }};
+            const similarityData = {{ question_results | map(attribute='similarity') | list | safe }};
+            const marksData = {{ question_results | map(attribute='score') | list | safe }};
+
+            const ctx = document.getElementById('questionChart').getContext('2d');
+            const chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: questionLabels,
+                    datasets: [
+                        {
+                            label: 'Similarity (%)',
+                            data: similarityData,
+                            backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                            yAxisID: 'y1'
+                        },
+                        {
+                            label: 'Marks Awarded',
+                            data: marksData,
+                            backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                            yAxisID: 'y2'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y1: {
+                            type: 'linear',
+                            position: 'left',
+                            title: { display: true, text: 'Similarity %' },
+                            min: 0,
+                            max: 100
+                        },
+                        y2: {
+                            type: 'linear',
+                            position: 'right',
+                            title: { display: true, text: 'Marks' },
+                            min: 0
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        </script>
+        {% endif %}
+
+        <div class="container d-flex justify-content-center mt-3 mb-5 gap-3">
+            <a href="/download_student_report/{{ roll_no }}/{{ subject }}" class="btn btn-outline-success">
+                📥 Download Summary Report
+            </a>
+            {% if question_results %}
+            <a href="/download_question_wise/{{ roll_no }}/{{ subject }}" class="btn btn-outline-primary">
+                📊 Download Question-wise Report
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>
